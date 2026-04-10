@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Templates</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- PASSCODE SCREEN -->
+    <div id="login-screen" class="screen">
+        <div class="login-card">
+            <h1>Staff Login</h1>
+            <p>Please enter your initials to access templates.</p>
+            <div class="input-group">
+                <input type="text" id="passcode-input" placeholder="e.g. RJ" maxlength="3" autocomplete="off" autocorrect="off">
+            </div>
+            <p id="login-error" class="error-text hide">Invalid passcode. Please try again.</p>
+            <button id="login-btn" class="primary-btn">Unlock</button>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div id="app-screen" class="screen hide">
+        <header>
+            <div class="header-content">
+                <h1>Templates</h1>
+                <span id="user-badge" class="badge"></span>
+            </div>
+            <button id="logout-btn" class="secondary-btn">Sign Out</button>
+        </header>
+
+        <main>
+            <!-- Fixed Inputs at top -->
+            <section class="variables-section section-card">
+                <h2>Guest Information</h2>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="guest-phone">Phone Number</label>
+                        <input type="tel" id="guest-phone" placeholder="(555) 555-5555">
+                    </div>
+                    <div class="input-group">
+                        <label for="guest-name">First Name</label>
+                        <input type="text" id="guest-name" placeholder="John">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hide">
+                <div class="spinner"></div>
+                <p>Loading templates...</p>
+            </div>
+
+            <!-- Templates List -->
+            <section id="template-categories" class="templates-section">
+                <!-- Categories and templates will be injected here down via JS -->
+            </section>
+        </main>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="toast hide">Copied to clipboard!</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
