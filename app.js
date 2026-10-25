@@ -223,22 +223,86 @@ function sendNativeSMS(bodyText) {
     window.location.href = smsUrl;
 }
 
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function addTrailingSpaceAndJoin(text, separator) {
+    const lines = text.replace(/\r\n?/g, '\n').split('\n');
+    return lines
+        .map((line, idx) => (idx < lines.length - 1 && line.trim().length > 0 ? line.replace(/\s+$/, '') + ' ' : line))
+        .join(separator);
+}
+
 function copyToClipboard(text) {
-    // Force convert all standard or mixed newlines into strict Windows CRLF (\r\n)
-    const crmessage = text.replace(/\r?\n/g, '\r\n');
+    const modeSelect = document.getElementById('copy-mode');
+    const mode = modeSelect ? modeSelect.value : 'mode1';
+
+    if (mode === 'mode2') {
+        // Mode 2: Native Rich Selection Copy (writes HTML + RTF + Plain Text to mobile OS pasteboard)
+        const lines = text.replace(/\r\n?/g, '\n').split('\n');
+        const htmlContent = lines
+            .map(line => line.trim().length > 0 ? `<p style="margin:0;">${escapeHtml(line)} </p>` : `<p style="margin:0;"><br></p>`)
+            .join('');
+
+        const container = document.createElement('div');
+        container.contentEditable = 'true';
+        container.style.position = 'fixed';
+        container.style.left = '-9999px';
+        container.style.top = '0';
+        container.style.whiteSpace = 'pre-wrap';
+        container.innerHTML = htmlContent;
+        document.body.appendChild(container);
+
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        try {
+            document.execCommand('copy');
+            showToast('Copied! (v3 - Mode 2)');
+        } catch (err) {
+            alert('Failed to copy text!');
+        }
+        selection.removeAllRanges();
+        document.body.removeChild(container);
+        return;
+    }
+
+    let separator = '\u2028'; // Mode 1 default: Unicode Line Separator (Shift+Enter)
+    let label = 'Mode 1';
+    if (mode === 'mode3') {
+        separator = '\u2029'; // Unicode Paragraph Separator
+        label = 'Mode 3';
+    } else if (mode === 'mode4') {
+        separator = '\u000B'; // Vertical Tab
+        label = 'Mode 4';
+    } else if (mode === 'mode5') {
+        separator = '\r'; // Bare Carriage Return only
+        label = 'Mode 5';
+    }
+
+    const formattedText = addTrailingSpaceAndJoin(text, separator);
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(crmessage).then(() => {
-            showToast();
+        navigator.clipboard.writeText(formattedText).then(() => {
+            showToast(`Copied! (v3 - ${label})`);
         }).catch(() => {
-            legacyTextareaCopy(crmessage);
+            legacyTextareaCopy(formattedText, label);
         });
     } else {
-        legacyTextareaCopy(crmessage);
+        legacyTextareaCopy(formattedText, label);
     }
 }
 
-function legacyTextareaCopy(text) {
+function legacyTextareaCopy(text, label = 'Mode 1') {
     const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.setAttribute('readonly', '');
@@ -249,14 +313,15 @@ function legacyTextareaCopy(text) {
     textarea.setSelectionRange(0, text.length); // Ensure full selection on iOS
     try {
         document.execCommand('copy');
-        showToast();
+        showToast(`Copied! (v3 - ${label})`);
     } catch (err) {
         alert("Failed to copy text!");
     }
     document.body.removeChild(textarea);
 }
 
-function showToast() {
+function showToast(msg = 'Copied to clipboard! (v3)') {
+    toast.innerText = msg;
     toast.classList.remove('hide');
     setTimeout(() => {
         toast.classList.add('hide');

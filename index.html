@@ -25,7 +25,7 @@
     <div id="app-screen" class="screen hide">
         <header>
             <div class="header-content">
-                <h1>Templates</h1>
+                <h1>Templates <small style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">v3</small></h1>
                 <span id="user-badge" class="badge"></span>
             </div>
             <button id="logout-btn" class="secondary-btn">Sign Out</button>
@@ -45,6 +45,16 @@
                         <input type="text" id="guest-name" placeholder="John">
                     </div>
                 </div>
+                <div class="input-group" style="margin-bottom: 0; margin-top: 0.25rem;">
+                    <label for="copy-mode">NumberBarn Paste Format (Test Mode)</label>
+                    <select id="copy-mode" style="padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: #f9fafb;">
+                        <option value="mode1">Mode 1: Soft Return (Shift+Enter / \u2028)</option>
+                        <option value="mode2">Mode 2: Native Rich Selection (HTML / RTF)</option>
+                        <option value="mode3">Mode 3: Paragraph Separator (\u2029)</option>
+                        <option value="mode4">Mode 4: Vertical Tab (\u000B)</option>
+                        <option value="mode5">Mode 5: Carriage Return Only (\r)</option>
+                    </select>
+                </div>
             </section>
 
             <!-- Loading State -->
@@ -63,6 +73,6 @@
     <!-- NOTIFICATION TOAST -->
     <div id="toast" class="toast hide">Copied to clipboard!</div>
 
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>
