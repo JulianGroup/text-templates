@@ -186,13 +186,16 @@ function renderTemplates() {
             let bodyText = t.template.replace(/\[First Name\]/gi, guestName);
             
             card.innerHTML = `
-                <h3>${t.title}</h3>
-                <div class="template-preview">${bodyText}</div>
+                <h3></h3>
+                <div class="template-preview"></div>
                 <div class="action-row">
                     <button class="btn-copy">📋 Copy</button>
                     <button class="btn-send">💬 Send Text</button>
                 </div>
             `;
+
+            card.querySelector('h3').textContent = t.title;
+            card.querySelector('.template-preview').textContent = bodyText;
 
             // Attach listeners
             const copyBtn = card.querySelector('.btn-copy');
@@ -220,12 +223,47 @@ function sendNativeSMS(bodyText) {
     window.location.href = smsUrl;
 }
 
+function formatTextForPaste(text) {
+    // Normalize all line endings to LF first
+    const lines = text.replace(/\r\n?/g, '\n').split('\n');
+    // Add a trailing space to non-empty lines so URLs/words never merge if a client flattens breaks,
+    // and join with Unicode Line Separator (\u2028 - soft return) so mobile/web paste handlers
+    // that strip standard CR/LF (/[\r\n]/g) preserve every line break.
+    return lines
+        .map((line, idx) => (idx < lines.length - 1 && line.trim().length > 0 ? line.replace(/\s+$/, '') + ' ' : line))
+        .join('\u2028');
+}
+
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
+    const formattedText = formatTextForPaste(text);
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(formattedText).then(() => {
+            showToast();
+        }).catch(() => {
+            legacyTextareaCopy(formattedText);
+        });
+    } else {
+        legacyTextareaCopy(formattedText);
+    }
+}
+
+function legacyTextareaCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, text.length); // Ensure full selection on iOS
+    try {
+        document.execCommand('copy');
         showToast();
-    }).catch(err => {
+    } catch (err) {
         alert("Failed to copy text!");
-    });
+    }
+    document.body.removeChild(textarea);
 }
 
 function showToast() {
